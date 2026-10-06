@@ -55,7 +55,7 @@ function choose(card,input,menu,player,name){selections.set(player.id,name);inpu
 function clearChoice(card,input,menu,player){selections.delete(player.id);input.value="";input.dataset.selected="";card.classList.remove("matched");menu.classList.remove("open");updateProgress();input.focus();renderMenu(card,input,menu,player)}
 function makeCard(player,idx,pgaIds){
  const card=document.createElement("article");card.className="card";card.dataset.id=player.id;
- card.innerHTML=`<div class="photoWrap"><div class="rank">FACE ${idx+1}</div><div class="fallback">${initials(player.name)}</div><img hidden alt="Golfer headshot"></div>
+ card.innerHTML=`<div class="photoWrap"><div class="rank">FACE ${idx+1}</div><img hidden alt="Golfer headshot"></div>
  <div class="answer"><input autocomplete="off" spellcheck="false" aria-label="Name this golfer" placeholder="Type a player name…"><button type="button" class="clear" aria-label="Clear answer">×</button><div class="menu" role="listbox"></div></div><div class="feedback"></div>`;
  const img=card.querySelector("img"),fallback=card.querySelector(".fallback"),input=card.querySelector("input"),menu=card.querySelector(".menu"),clear=card.querySelector(".clear");
  const pid=pgaIds[player.name];
