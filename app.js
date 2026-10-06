@@ -461,10 +461,6 @@ function makeCard(
         FACE ${index + 1}
       </div>
 
-      <div class="fallback">
-        Image unavailable
-      </div>
-
       <img
         hidden
         alt="Golfer headshot"
