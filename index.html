@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FedEx Face Match — 2026</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div>
+    <div class="eyebrow">2026 PGA TOUR • FEDEXCUP FACE MATCH</div>
+    <h1>Know the face. Name the golfer.</h1>
+    <p>Match all 100 players. Change answers as often as you want. Nothing is graded until you submit.</p>
+  </div>
+  <div class="progressBox">
+    <div class="progressText"><strong id="count">0</strong><span>/ 100 matched</span></div>
+    <div class="bar"><div id="barFill"></div></div>
+  </div>
+</header>
+
+<main>
+  <div class="notice" id="imageNotice">
+    Headshots are sourced from PGA TOUR’s standardized player headshot service.
+  </div>
+  <section id="grid" class="grid" aria-label="Player matching grid"></section>
+  <div class="submitWrap">
+    <button id="submitBtn" class="primary">Submit all answers</button>
+    <button id="resetBtn" class="secondary">Start over</button>
+    <div id="submitMsg" class="submitMsg" aria-live="polite"></div>
+  </div>
+</main>
+
+<dialog id="results">
+  <div class="resultInner">
+    <div class="eyebrow">FINAL SCORE</div>
+    <div class="score"><span id="score">0</span><small>/100</small></div>
+    <p id="scoreLine"></p>
+    <div class="resultActions">
+      <button id="reviewBtn" class="secondary">Review board</button>
+      <button id="playAgainBtn" class="primary">Play again</button>
+    </div>
+  </div>
+</dialog>
+<script src="players.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
