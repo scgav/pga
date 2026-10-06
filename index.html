@@ -23,7 +23,20 @@
   <div class="notice" id="imageNotice">
     Headshots are sourced from PGA TOUR’s standardized player headshot service.
   </div>
-  <section id="grid" class="grid" aria-label="Player matching grid"></section>
+  <div class="gameLayout">
+    <section id="grid" class="grid" aria-label="Player matching grid"></section>
+    <aside class="remainingPanel" aria-label="Names remaining">
+      <div class="remainingHeader">
+        <div>
+          <div class="eyebrow">AVAILABLE PLAYER POOL</div>
+          <h2>Names Remaining</h2>
+        </div>
+        <strong id="remainingCount">100</strong>
+      </div>
+      <button id="remainingToggle" class="remainingToggle" type="button" aria-expanded="false">Show remaining names</button>
+      <div id="remainingNames" class="remainingNames"></div>
+    </aside>
+  </div>
   <div class="submitWrap">
     <button id="submitBtn" class="primary">Submit all answers</button>
     <button id="resetBtn" class="secondary">Start over</button>

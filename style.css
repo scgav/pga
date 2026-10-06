@@ -8,7 +8,7 @@
 main{max-width:1500px;margin:auto;padding:0 24px 70px}.notice{border-top:1px solid var(--line);padding:15px 0;color:var(--muted);font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:visible;position:relative;transition:border-color .15s,transform .15s}.card.matched{border-color:#a9c9b6}.card.correct{border:2px solid var(--green)}.card.wrong{border:2px solid var(--red)}
-.photoWrap{height:210px;background:#e5e9e6;border-radius:13px 13px 0 0;overflow:hidden;position:relative}.photoWrap img{position:absolute;inset:0;z-index:2;width:100%;height:100%;object-fit:cover;object-position:center top;display:block}.photoWrap .rank{z-index:3}.photoWrap .fallback{position:absolute;inset:0;z-index:1}.rank{position:absolute;top:9px;left:9px;background:rgba(20,32,25,.82);color:white;padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700}
+.photoWrap{height:210px;background:#e5e9e6;border-radius:13px 13px 0 0;overflow:hidden;position:relative}.photoWrap img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}.rank{position:absolute;top:9px;left:9px;background:rgba(20,32,25,.82);color:white;padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700}
 .fallback{height:100%;display:grid;place-items:center;font-size:54px;font-weight:800;color:#7b8780;background:linear-gradient(145deg,#e8ece9,#d5dcd7)}
 .answer{padding:12px;position:relative}.answer input{width:100%;border:1px solid #cfd7d1;border-radius:9px;padding:11px 36px 11px 11px;font-size:16px;outline:none;background:white}.answer input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,92,59,.12)}
 .clear{position:absolute;right:19px;top:18px;border:0;background:transparent;font-size:20px;color:#89938d;cursor:pointer;display:none}.matched .clear{display:block}
@@ -19,3 +19,34 @@ dialog{border:0;border-radius:18px;padding:0;box-shadow:0 30px 80px rgba(0,0,0,.
 @media(max-width:1100px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.photoWrap{height:200px}}
 @media(max-width:800px){.hero{display:block}.progressBox{margin-top:20px}.progressText{justify-content:flex-start}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.photoWrap{height:210px}}
 @media(max-width:430px){.hero,main{padding-left:12px;padding-right:12px}.grid{gap:8px}.photoWrap{height:175px}.answer{padding:8px}.menu{left:8px;right:8px;top:53px}.answer input{padding:10px 31px 10px 9px}.clear{right:13px;top:13px}}
+
+
+/* Names Remaining panel */
+.gameLayout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px;align-items:start}
+.gameLayout .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.remainingPanel{position:sticky;top:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;max-height:calc(100vh - 32px);overflow:auto}
+.remainingHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.remainingHeader h2{font-size:20px;line-height:1.1;margin:4px 0 0;letter-spacing:-.02em}
+.remainingHeader strong{font-size:30px;line-height:1;color:var(--green)}
+.remainingNames{display:flex;flex-direction:column;padding-top:8px}
+.remainingName{padding:7px 2px;border-bottom:1px solid #edf0ee;font-size:14px;line-height:1.25}
+.remainingName:last-child{border-bottom:0}
+.remainingEmpty{padding:18px 2px;color:var(--muted);font-size:14px}
+.remainingToggle{display:none}
+
+@media(max-width:1100px){
+  .gameLayout{grid-template-columns:minmax(0,1fr) 240px;gap:14px}
+  .gameLayout .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:800px){
+  .gameLayout{display:flex;flex-direction:column}
+  .gameLayout .grid{order:2;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .remainingPanel{order:1;position:sticky;top:0;z-index:50;width:100%;max-height:none;padding:11px 12px;border-radius:10px}
+  .remainingHeader{align-items:center;padding:0;border:0}
+  .remainingHeader .eyebrow{display:none}
+  .remainingHeader h2{font-size:16px;margin:0}
+  .remainingHeader strong{font-size:22px}
+  .remainingToggle{display:block;width:100%;margin-top:8px;border:1px solid var(--line);border-radius:8px;background:white;padding:9px 10px;font-weight:700;color:var(--ink)}
+  .remainingNames{display:none;max-height:42vh;overflow:auto;margin-top:8px;border-top:1px solid var(--line)}
+  .remainingPanel.open .remainingNames{display:flex}
+}
