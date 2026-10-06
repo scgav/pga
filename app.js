@@ -1,68 +1,109 @@
-const grid = document.getElementById('grid');
-const countEl = document.getElementById('count');
-const barFill = document.getElementById('barFill');
+const grid =
+  document.getElementById("grid");
 
-const remainingNamesEl = document.getElementById('remainingNames');
-const remainingCountEl = document.getElementById('remainingCount');
+const countEl =
+  document.getElementById("count");
 
-const selections = new Map();
+const barFill =
+  document.getElementById("barFill");
 
-let submitted = false;
-let cards = [];
+const remainingNamesEl =
+  document.getElementById("remainingNames");
+
+const remainingCountEl =
+  document.getElementById("remainingCount");
+
+const unguessedTab =
+  document.getElementById("unguessedTab");
+
+const guessedTab =
+  document.getElementById("guessedTab");
+
+const unguessedCountEl =
+  document.getElementById("unguessedCount");
+
+const guessedCountEl =
+  document.getElementById("guessedCount");
+
+
+const selections =
+  new Map();
+
+
+let submitted =
+  false;
+
+let cards =
+  [];
+
+let activeView =
+  "unguessed";
 
 
 /* =========================================================
-   PGA TOUR HEADSHOTS
+   PGA TOUR IMAGES
    ========================================================= */
 
 const PGA_PLAYER_LIST =
   "https://data-api.pgatour.com/player/list/R";
 
-const PGA_HEADSHOT = id =>
-  `https://pga-tour-res.cloudinary.com/image/upload/c_thumb,g_face,w_600,h_600,z_0.72/headshots_${id}.jpg`;
+
+const PGA_HEADSHOT =
+  id =>
+    `https://pga-tour-res.cloudinary.com/image/upload/c_thumb,g_face,w_600,h_600,z_0.72/headshots_${id}.jpg`;
 
 
 /*
- * Verified PGA TOUR player IDs.
+ * Known PGA TOUR IDs.
  *
- * The game also attempts to retrieve IDs from the PGA TOUR
- * player directory for anyone not explicitly listed here.
+ * The site also attempts to retrieve the rest from
+ * the PGA TOUR player directory.
  */
 const VERIFIED_IDS = {
+
   "Scottie Scheffler": "46046",
   "Rory McIlroy": "28237",
   "Brooks Koepka": "36689",
   "Cameron Young": "57366",
+
   "Si Woo Kim": "37455",
   "Chris Gotterup": "59095",
   "Sam Burns": "47504",
   "Tommy Fleetwood": "30911",
+
   "Jacob Bridgeman": "60004",
   "Russell Henley": "34098",
   "Ryan Gerard": "59018",
   "Gary Woodland": "31323",
+
   "Kristoffer Reitan": "49855",
   "Min Woo Lee": "37378",
   "J.J. Spaun": "39324",
   "Robert MacIntyre": "52215",
+
   "Maverick McNealy": "46442",
   "Michael Brennan": "61522",
   "Ryo Hisatsune": "51287",
   "Ben Griffin": "54591",
+
   "Nico Echavarria": "51349",
   "Austin Smotherman": "50095",
   "Sahith Theegala": "51634",
   "Matt McCarty": "59141",
+
   "Pierceson Coody": "59836",
   "Harris English": "34099",
   "Doug Ghim": "52375",
   "Michael Thorbjornsen": "57364",
+
   "Eric Cole": "47591",
   "Harry Hall": "57975",
   "Sungjae Im": "39971",
   "Ludvig Åberg": "52955",
+
   "Alex Smalley": "46340",
   "Jordan Spieth": "34046"
+
 };
 
 
@@ -71,87 +112,297 @@ const VERIFIED_IDS = {
    ========================================================= */
 
 function norm(s) {
+
   return s
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
     .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(
+      /[^a-z0-9 ]/g,
+      " "
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
     .trim();
+
 }
 
 
 function shuffle(a) {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
 
-    [a[i], a[j]] = [a[j], a[i]];
+  for (
+    let i = a.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+
+    [
+      a[i],
+      a[j]
+    ] = [
+      a[j],
+      a[i]
+    ];
+
   }
 
+
   return a;
+
 }
 
 
-const board = shuffle([...PLAYERS]);
+const board =
+  shuffle(
+    [...PLAYERS]
+  );
 
 
 /* =========================================================
-   RESOLVE PGA TOUR PLAYER IDS
+   PGA TOUR IDS
    ========================================================= */
 
 async function resolvePgaIds() {
 
-  const ids = { ...VERIFIED_IDS };
+  const ids = {
+    ...VERIFIED_IDS
+  };
+
 
   try {
 
-    const response = await fetch(
-      PGA_PLAYER_LIST,
-      { mode: "cors" }
-    );
-
-    if (!response.ok) {
-      throw new Error("PGA TOUR player directory unavailable");
-    }
-
-    const data = await response.json();
-
-    const rows = Array.isArray(data)
-      ? data
-      : (data.players || []);
-
-    const byName = new Map(
-      rows.map(player => [
-        norm(
-          player.displayName ||
-          `${player.firstName || ""} ${player.lastName || ""}`
-        ),
-        String(player.id)
-      ])
-    );
-
-    PLAYERS.forEach(player => {
-
-      const id = byName.get(
-        norm(player.name)
+    const response =
+      await fetch(
+        PGA_PLAYER_LIST,
+        {
+          mode:
+            "cors"
+        }
       );
 
-      if (id) {
-        ids[player.name] = id;
+
+    if (!response.ok) {
+
+      throw new Error(
+        "PGA TOUR player directory unavailable"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    const rows =
+      Array.isArray(data)
+        ? data
+        : (
+            data.players ||
+            []
+          );
+
+
+    const byName =
+      new Map(
+
+        rows.map(
+          player => [
+
+            norm(
+              player.displayName ||
+              `${player.firstName || ""} ${player.lastName || ""}`
+            ),
+
+            String(
+              player.id
+            )
+
+          ]
+        )
+
+      );
+
+
+    PLAYERS.forEach(
+      player => {
+
+        const id =
+          byName.get(
+            norm(
+              player.name
+            )
+          );
+
+
+        if (id) {
+
+          ids[player.name] =
+            id;
+
+        }
+
       }
+    );
 
-    });
+  }
 
-  } catch (error) {
+  catch (error) {
 
     console.warn(
-      "PGA TOUR player directory request failed. Using embedded IDs.",
+      "PGA TOUR player directory request failed. Using embedded player IDs.",
       error
     );
 
   }
 
+
   return ids;
+
+}
+
+
+/* =========================================================
+   NAME SORTING
+   ========================================================= */
+
+function lastNameSort(
+  a,
+  b
+) {
+
+  const aParts =
+    a.name
+      .trim()
+      .split(/\s+/);
+
+  const bParts =
+    b.name
+      .trim()
+      .split(/\s+/);
+
+
+  const aLast =
+    aParts[
+      aParts.length - 1
+    ];
+
+  const bLast =
+    bParts[
+      bParts.length - 1
+    ];
+
+
+  return (
+    aLast.localeCompare(
+      bLast
+    ) ||
+
+    a.name.localeCompare(
+      b.name
+    )
+  );
+
+}
+
+
+/* =========================================================
+   REMAINING NAME POOL
+   ========================================================= */
+
+function updateRemaining() {
+
+  const used =
+    new Set(
+      selections.values()
+    );
+
+
+  const remaining =
+    PLAYERS
+      .filter(
+        player =>
+          !used.has(
+            player.name
+          )
+      )
+      .sort(
+        lastNameSort
+      );
+
+
+  remainingCountEl.textContent =
+    remaining.length;
+
+
+  remainingNamesEl.innerHTML =
+    "";
+
+
+  if (
+    remaining.length === 0
+  ) {
+
+    const message =
+      document.createElement(
+        "div"
+      );
+
+
+    message.className =
+      "remainingEmpty";
+
+
+    message.textContent =
+      "Every name has been assigned.";
+
+
+    remainingNamesEl.appendChild(
+      message
+    );
+
+
+    return;
+
+  }
+
+
+  remaining.forEach(
+    player => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "remainingName";
+
+
+      row.textContent =
+        player.name;
+
+
+      remainingNamesEl.appendChild(
+        row
+      );
+
+    }
+  );
+
 }
 
 
@@ -159,91 +410,159 @@ async function resolvePgaIds() {
    NAME AVAILABILITY
    ========================================================= */
 
-function usedElsewhere(cardId) {
+function usedElsewhere(
+  cardId
+) {
 
   return new Set(
+
     [...selections.entries()]
-      .filter(([id]) => id !== cardId)
-      .map(([, name]) => name)
+
+      .filter(
+        ([id]) =>
+          id !== cardId
+      )
+
+      .map(
+        ([, name]) =>
+          name
+      )
+
   );
 
 }
 
 
-function matches(query, name) {
+function matches(
+  query,
+  name
+) {
 
-  const q = norm(query);
+  const q =
+    norm(query);
+
 
   if (!q) {
+
     return true;
+
   }
 
-  const n = norm(name);
+
+  const n =
+    norm(name);
+
 
   return q
     .split(" ")
-    .every(part => n.includes(part));
+    .every(
+      part =>
+        n.includes(
+          part
+        )
+    );
 
 }
 
 
 /* =========================================================
-   NAMES REMAINING PANEL
+   VIEW MANAGEMENT
    ========================================================= */
 
-function lastNameSort(a, b) {
+function updateView() {
 
-  const aParts = a.name.trim().split(/\s+/);
-  const bParts = b.name.trim().split(/\s+/);
+  const guessed =
+    selections.size;
 
-  const aLast = aParts[aParts.length - 1];
-  const bLast = bParts[bParts.length - 1];
+  const unguessed =
+    PLAYERS.length -
+    guessed;
 
-  return (
-    aLast.localeCompare(bLast) ||
-    a.name.localeCompare(b.name)
+
+  guessedCountEl.textContent =
+    guessed;
+
+  unguessedCountEl.textContent =
+    unguessed;
+
+
+  cards.forEach(
+    ({
+      card,
+      player
+    }) => {
+
+      const isGuessed =
+        selections.has(
+          player.id
+        );
+
+
+      let shouldShow;
+
+
+      if (
+        activeView ===
+        "guessed"
+      ) {
+
+        shouldShow =
+          isGuessed;
+
+      }
+
+      else {
+
+        shouldShow =
+          !isGuessed;
+
+      }
+
+
+      card.classList.toggle(
+        "viewHidden",
+        !shouldShow
+      );
+
+    }
   );
 
-}
+
+  const showingUnguessed =
+    activeView ===
+    "unguessed";
 
 
-function updateRemaining() {
+  unguessedTab
+    .classList
+    .toggle(
+      "active",
+      showingUnguessed
+    );
 
-  const used = new Set(
-    selections.values()
+
+  guessedTab
+    .classList
+    .toggle(
+      "active",
+      !showingUnguessed
+    );
+
+
+  unguessedTab.setAttribute(
+    "aria-selected",
+    String(
+      showingUnguessed
+    )
   );
 
-  const remaining = PLAYERS
-    .filter(player => !used.has(player.name))
-    .sort(lastNameSort);
 
-  remainingCountEl.textContent =
-    remaining.length;
-
-  remainingNamesEl.innerHTML = "";
-
-  if (!remaining.length) {
-
-    remainingNamesEl.innerHTML =
-      '<div class="remainingEmpty">Every name has been assigned.</div>';
-
-    return;
-  }
-
-  remaining.forEach(player => {
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "remainingName";
-
-    div.textContent =
-      player.name;
-
-    remainingNamesEl.appendChild(div);
-
-  });
+  guessedTab.setAttribute(
+    "aria-selected",
+    String(
+      !showingUnguessed
+    )
+  );
 
 }
 
@@ -254,14 +573,21 @@ function updateRemaining() {
 
 function updateProgress() {
 
-  const n = selections.size;
+  const matched =
+    selections.size;
 
-  countEl.textContent = n;
+
+  countEl.textContent =
+    matched;
+
 
   barFill.style.width =
-    n + "%";
+    matched + "%";
+
 
   updateRemaining();
+
+  updateView();
 
 }
 
@@ -278,83 +604,144 @@ function renderMenu(
 ) {
 
   if (submitted) {
+
     return;
+
   }
 
+
   const used =
-    usedElsewhere(player.id);
+    usedElsewhere(
+      player.id
+    );
+
 
   const query =
     input.value;
 
-  /*
-   * CRITICAL:
-   * Any player already selected on another card
-   * is removed from autocomplete.
-   */
-  const options = PLAYERS
-    .filter(candidate =>
-      !used.has(candidate.name) &&
-      matches(query, candidate.name)
-    )
-    .slice(0, 12);
 
-  menu.innerHTML = "";
+  const options =
+    PLAYERS
 
-  if (!options.length) {
+      .filter(
+        candidate =>
 
-    menu.innerHTML =
-      '<div class="empty">No available names match.</div>';
+          !used.has(
+            candidate.name
+          ) &&
 
-    menu.classList.add("open");
+          matches(
+            query,
+            candidate.name
+          )
+      )
+
+      .sort(
+        lastNameSort
+      )
+
+      .slice(
+        0,
+        12
+      );
+
+
+  menu.innerHTML =
+    "";
+
+
+  if (
+    options.length === 0
+  ) {
+
+    const empty =
+      document.createElement(
+        "div"
+      );
+
+
+    empty.className =
+      "empty";
+
+
+    empty.textContent =
+      "No available names match.";
+
+
+    menu.appendChild(
+      empty
+    );
+
+
+    menu.classList.add(
+      "open"
+    );
+
 
     return;
+
   }
 
-  options.forEach(candidate => {
 
-    const option =
-      document.createElement("div");
+  options.forEach(
+    candidate => {
 
-    option.className =
-      "option";
-
-    option.textContent =
-      candidate.name;
-
-    option.setAttribute(
-      "role",
-      "option"
-    );
-
-    option.addEventListener(
-      "mousedown",
-      event => {
-
-        event.preventDefault();
-
-        choose(
-          card,
-          input,
-          menu,
-          player,
-          candidate.name
+      const option =
+        document.createElement(
+          "div"
         );
 
-      }
-    );
 
-    menu.appendChild(option);
+      option.className =
+        "option";
 
-  });
 
-  menu.classList.add("open");
+      option.textContent =
+        candidate.name;
+
+
+      option.setAttribute(
+        "role",
+        "option"
+      );
+
+
+      option.addEventListener(
+        "mousedown",
+        event => {
+
+          event.preventDefault();
+
+
+          choose(
+            card,
+            input,
+            menu,
+            player,
+            candidate.name
+          );
+
+        }
+      );
+
+
+      menu.appendChild(
+        option
+      );
+
+    }
+  );
+
+
+  menu.classList.add(
+    "open"
+  );
 
 }
 
 
 /* =========================================================
-   CHOOSE / CLEAR ANSWERS
+   CHOOSE ANSWER
    ========================================================= */
 
 function choose(
@@ -370,23 +757,38 @@ function choose(
     name
   );
 
-  input.value = name;
+
+  input.value =
+    name;
+
 
   input.dataset.selected =
     name;
+
 
   card.classList.add(
     "matched"
   );
 
+
   menu.classList.remove(
     "open"
   );
 
+
+  /*
+   * Because updateProgress calls updateView,
+   * this card immediately disappears from
+   * Unguessed and becomes visible in Guessed.
+   */
   updateProgress();
 
 }
 
+
+/* =========================================================
+   CLEAR ANSWER
+   ========================================================= */
 
 function clearChoice(
   card,
@@ -399,28 +801,31 @@ function clearChoice(
     player.id
   );
 
-  input.value = "";
 
-  input.dataset.selected = "";
+  input.value =
+    "";
+
+
+  input.dataset.selected =
+    "";
+
 
   card.classList.remove(
     "matched"
   );
 
+
   menu.classList.remove(
     "open"
   );
 
+
+  /*
+   * If this happened while viewing Guessed,
+   * the card immediately leaves that view
+   * and returns to Unguessed.
+   */
   updateProgress();
-
-  input.focus();
-
-  renderMenu(
-    card,
-    input,
-    menu,
-    player
-  );
 
 }
 
@@ -436,23 +841,19 @@ function makeCard(
 ) {
 
   const card =
-    document.createElement("article");
+    document.createElement(
+      "article"
+    );
+
 
   card.className =
     "card";
+
 
   card.dataset.id =
     player.id;
 
 
-  /*
-   * IMPORTANT:
-   *
-   * No initials are displayed here.
-   *
-   * Initials would give away information
-   * in a face-identification game.
-   */
   card.innerHTML = `
 
     <div class="photoWrap">
@@ -468,6 +869,7 @@ function makeCard(
 
     </div>
 
+
     <div class="answer">
 
       <input
@@ -477,6 +879,7 @@ function makeCard(
         placeholder="Type a player name…"
       >
 
+
       <button
         type="button"
         class="clear"
@@ -485,6 +888,7 @@ function makeCard(
         ×
       </button>
 
+
       <div
         class="menu"
         role="listbox"
@@ -492,60 +896,76 @@ function makeCard(
 
     </div>
 
+
     <div class="feedback"></div>
 
   `;
 
 
   const img =
-    card.querySelector("img");
+    card.querySelector(
+      "img"
+    );
 
-  const fallback =
-    card.querySelector(".fallback");
 
   const input =
-    card.querySelector("input");
+    card.querySelector(
+      "input"
+    );
+
 
   const menu =
-    card.querySelector(".menu");
+    card.querySelector(
+      ".menu"
+    );
+
 
   const clear =
-    card.querySelector(".clear");
+    card.querySelector(
+      ".clear"
+    );
 
 
   /* -------------------------
-     HEADSHOT
+     IMAGE
      ------------------------- */
 
   const playerId =
-    pgaIds[player.name];
+    pgaIds[
+      player.name
+    ];
+
 
   if (playerId) {
 
     img.src =
-      PGA_HEADSHOT(playerId);
+      PGA_HEADSHOT(
+        playerId
+      );
 
-    img.onload = () => {
 
-      fallback.hidden = true;
+    img.onload =
+      () => {
 
-      img.hidden = false;
+        img.hidden =
+          false;
 
-    };
+      };
 
-    img.onerror = () => {
 
-      img.hidden = true;
+    img.onerror =
+      () => {
 
-      fallback.hidden = false;
+        img.hidden =
+          true;
 
-    };
+      };
 
   }
 
 
   /* -------------------------
-     INPUT EVENTS
+     INPUT FOCUS
      ------------------------- */
 
   input.addEventListener(
@@ -563,14 +983,21 @@ function makeCard(
   );
 
 
+  /* -------------------------
+     INPUT EDITING
+     ------------------------- */
+
   input.addEventListener(
     "input",
     () => {
 
       /*
-       * If the user edits an already-selected
-       * answer, immediately release that name
-       * back into the available pool.
+       * Editing an already-selected name
+       * releases that name back into the pool.
+       *
+       * This also means the card is no longer
+       * considered guessed until a new valid
+       * autocomplete choice is selected.
        */
       if (
         input.dataset.selected &&
@@ -582,16 +1009,20 @@ function makeCard(
           player.id
         );
 
+
         input.dataset.selected =
           "";
+
 
         card.classList.remove(
           "matched"
         );
 
+
         updateProgress();
 
       }
+
 
       renderMenu(
         card,
@@ -605,7 +1036,7 @@ function makeCard(
 
 
   /* -------------------------
-     KEYBOARD NAVIGATION
+     KEYBOARD AUTOCOMPLETE
      ------------------------- */
 
   input.addEventListener(
@@ -613,17 +1044,29 @@ function makeCard(
     event => {
 
       const options =
-        [...menu.querySelectorAll(".option")];
+        [
+          ...menu.querySelectorAll(
+            ".option"
+          )
+        ];
+
 
       let active =
-        options.findIndex(option =>
-          option.classList.contains("active")
+        options.findIndex(
+          option =>
+            option.classList.contains(
+              "active"
+            )
         );
 
 
-      if (event.key === "ArrowDown") {
+      if (
+        event.key ===
+        "ArrowDown"
+      ) {
 
         event.preventDefault();
+
 
         active =
           Math.min(
@@ -631,24 +1074,41 @@ function makeCard(
             options.length - 1
           );
 
-        options.forEach(option =>
-          option.classList.remove("active")
+
+        options.forEach(
+          option =>
+            option.classList.remove(
+              "active"
+            )
         );
 
-        options[active]
-          ?.classList.add("active");
 
-        options[active]
-          ?.scrollIntoView({
-            block: "nearest"
-          });
+        options[
+          active
+        ]?.classList.add(
+          "active"
+        );
+
+
+        options[
+          active
+        ]?.scrollIntoView(
+          {
+            block:
+              "nearest"
+          }
+        );
 
       }
 
 
-      if (event.key === "ArrowUp") {
+      if (
+        event.key ===
+        "ArrowUp"
+      ) {
 
         event.preventDefault();
+
 
         active =
           Math.max(
@@ -656,42 +1116,67 @@ function makeCard(
             0
           );
 
-        options.forEach(option =>
-          option.classList.remove("active")
+
+        options.forEach(
+          option =>
+            option.classList.remove(
+              "active"
+            )
         );
 
-        options[active]
-          ?.classList.add("active");
 
-        options[active]
-          ?.scrollIntoView({
-            block: "nearest"
-          });
+        options[
+          active
+        ]?.classList.add(
+          "active"
+        );
+
+
+        options[
+          active
+        ]?.scrollIntoView(
+          {
+            block:
+              "nearest"
+          }
+        );
 
       }
 
 
       if (
-        event.key === "Enter" &&
+        event.key ===
+          "Enter" &&
         options.length
       ) {
 
         event.preventDefault();
+
+
+        const chosen =
+          options[
+            Math.max(
+              active,
+              0
+            )
+          ];
+
 
         choose(
           card,
           input,
           menu,
           player,
-          options[
-            Math.max(active, 0)
-          ].textContent
+          chosen.textContent
         );
 
       }
 
 
-      if (event.key === "Escape") {
+      if (
+        event.key ===
+        "Escape"
+      ) {
 
         menu.classList.remove(
           "open"
@@ -703,21 +1188,32 @@ function makeCard(
   );
 
 
+  /* -------------------------
+     CLOSE MENU
+     ------------------------- */
+
   input.addEventListener(
     "blur",
     () => {
 
       setTimeout(
-        () =>
+        () => {
+
           menu.classList.remove(
             "open"
-          ),
+          );
+
+        },
         100
       );
 
     }
   );
 
+
+  /* -------------------------
+     CLEAR BUTTON
+     ------------------------- */
 
   clear.addEventListener(
     "click",
@@ -734,20 +1230,24 @@ function makeCard(
   );
 
 
-  grid.appendChild(card);
+  grid.appendChild(
+    card
+  );
 
 
-  cards.push({
-    card,
-    input,
-    player
-  });
+  cards.push(
+    {
+      card,
+      input,
+      player
+    }
+  );
 
 }
 
 
 /* =========================================================
-   INITIALIZE GAME
+   INITIALIZE
    ========================================================= */
 
 async function init() {
@@ -757,7 +1257,10 @@ async function init() {
 
 
   board.forEach(
-    (player, index) => {
+    (
+      player,
+      index
+    ) => {
 
       makeCard(
         player,
@@ -775,16 +1278,20 @@ async function init() {
   const missing =
     PLAYERS.filter(
       player =>
-        !pgaIds[player.name]
+        !pgaIds[
+          player.name
+        ]
     ).length;
 
 
   if (missing) {
 
-    document.getElementById(
-      "imageNotice"
-    ).textContent =
-      `PGA TOUR headshots loaded. ${missing} player ID${missing === 1 ? "" : "s"} could not be resolved; those cards show “Image unavailable.”`;
+    document
+      .getElementById(
+        "imageNotice"
+      )
+      .textContent =
+        `PGA TOUR headshots loaded. ${missing} player ID${missing === 1 ? "" : "s"} could not be resolved in this browser.`;
 
   }
 
@@ -795,17 +1302,53 @@ init();
 
 
 /* =========================================================
+   VIEW BUTTONS
+   ========================================================= */
+
+unguessedTab.addEventListener(
+  "click",
+  () => {
+
+    activeView =
+      "unguessed";
+
+
+    updateView();
+
+  }
+);
+
+
+guessedTab.addEventListener(
+  "click",
+  () => {
+
+    activeView =
+      "guessed";
+
+
+    updateView();
+
+  }
+);
+
+
+/* =========================================================
    SUBMIT
    ========================================================= */
 
 document
-  .getElementById("submitBtn")
+  .getElementById(
+    "submitBtn"
+  )
   .addEventListener(
     "click",
     () => {
 
       const missing =
-        100 - selections.size;
+        PLAYERS.length -
+        selections.size;
+
 
       const message =
         document.getElementById(
@@ -825,9 +1368,12 @@ document
       }
 
 
-      submitted = true;
+      submitted =
+        true;
 
-      let score = 0;
+
+      let score =
+        0;
 
 
       cards.forEach(
@@ -842,13 +1388,16 @@ document
               player.id
             ) || "";
 
+
           const correct =
             guess ===
             player.name;
 
 
           if (correct) {
+
             score++;
+
           }
 
 
@@ -859,46 +1408,72 @@ document
           );
 
 
-          card.querySelector(
-            ".feedback"
-          ).textContent =
-            correct
-              ? "✓ Correct"
-              : `✕ ${guess || "No answer"} → ${player.name}`;
+          card
+            .querySelector(
+              ".feedback"
+            )
+            .textContent =
+              correct
+                ? "✓ Correct"
+                : `✕ ${guess || "No answer"} → ${player.name}`;
 
 
-          input.disabled = true;
+          input.disabled =
+            true;
 
 
-          card.querySelector(
-            ".clear"
-          ).style.display =
-            "none";
+          card
+            .querySelector(
+              ".clear"
+            )
+            .style
+            .display =
+              "none";
 
         }
       );
 
 
-      document.getElementById(
-        "score"
-      ).textContent =
-        score;
+      /*
+       * After grading, show all guessed cards.
+       *
+       * If the player submitted before filling
+       * all 100, unanswered cards remain in
+       * the Unguessed view.
+       */
+      activeView =
+        selections.size > 0
+          ? "guessed"
+          : "unguessed";
 
 
-      document.getElementById(
-        "scoreLine"
-      ).textContent =
+      updateView();
 
-        score >= 90
-          ? "Tour-level face recognition. Ridiculous."
 
-        : score >= 75
-          ? "You know this field extremely well."
+      document
+        .getElementById(
+          "score"
+        )
+        .textContent =
+          score;
 
-        : score >= 50
-          ? "Solid — but the bottom half got you."
 
-        : "The FedExCup Fall sickos have defeated you.";
+      document
+        .getElementById(
+          "scoreLine"
+        )
+        .textContent =
+
+          score >= 90
+            ? "Tour-level face recognition. Ridiculous."
+
+          : score >= 75
+            ? "You know this field extremely well."
+
+          : score >= 50
+            ? "Solid — but the bottom half got you."
+
+          : "The FedExCup Fall sickos have defeated you.";
 
 
       document
@@ -916,11 +1491,13 @@ document
 
 
 /* =========================================================
-   RESULT BUTTONS
+   RESULTS
    ========================================================= */
 
 document
-  .getElementById("reviewBtn")
+  .getElementById(
+    "reviewBtn"
+  )
   .addEventListener(
     "click",
     () => {
@@ -936,7 +1513,9 @@ document
 
 
 document
-  .getElementById("playAgainBtn")
+  .getElementById(
+    "playAgainBtn"
+  )
   .addEventListener(
     "click",
     () => {
@@ -948,7 +1527,9 @@ document
 
 
 document
-  .getElementById("resetBtn")
+  .getElementById(
+    "resetBtn"
+  )
   .addEventListener(
     "click",
     () => {
@@ -968,7 +1549,7 @@ document
 
 
 /* =========================================================
-   MOBILE REMAINING-NAMES PANEL
+   MOBILE NAME PANEL
    ========================================================= */
 
 const remainingPanel =
@@ -988,9 +1569,11 @@ remainingToggle.addEventListener(
   () => {
 
     const open =
-      remainingPanel.classList.toggle(
-        "open"
-      );
+      remainingPanel
+        .classList
+        .toggle(
+          "open"
+        );
 
 
     remainingToggle.setAttribute(
